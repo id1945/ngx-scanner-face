@@ -25,7 +25,7 @@ import { NgxScannerFaceModule } from 'ngx-scanner-face';
 In the Component:
 
 ```html
-<ngx-scanner-face #scanner="scanner"></ngx-scanner-face>
+<ngx-scanner-face #scanner="scanner" [isAuto]="true"></ngx-scanner-face>
 <span>{{scanner.data | json}}</span>
 ```
 
@@ -746,6 +746,10 @@ interface FaceGearConfig extends GenericConfig {
     <th colspan="2">Support versions</th>
   </tr>
   <tr>
+    <td>Angular 15</td>
+    <td>1.0.8</td>
+  </tr>
+  <tr>
     <td>Angular 14</td>
     <td>1.0.0</td>
   </tr>
@@ -767,6 +771,6 @@ interface FaceGearConfig extends GenericConfig {
   </tr>
 </table>
 
-![Vietnam](https://raw.githubusercontent.com/id1945/ngx-scanner-face/master/vietnam.gif)
+![Vietnam](https://raw.githubusercontent.com/id1945/id1945/master/vietnam.gif)
 
 [MIT License](https://github.com/id1945/ngx-scanner-face/blob/master/LICENSE). Copyright (c) 2021 DaiDH
