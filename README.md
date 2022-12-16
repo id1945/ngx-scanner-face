@@ -2,7 +2,7 @@
 
 This library is built to provide a solution analysis of human face recognition.\
 This library analyzes each face and provides statistics for Angular web applications easily.\
-This [demo](https://id1945.github.io/ngx-scanner-face/).
+This [demo](https://id1945.github.io/ngx-scanner-face/), [stackblitz](https://stackblitz.com/edit/angular-ngx-scanner-face).
 
 ![Logo](https://raw.githubusercontent.com/id1945/ngx-scanner-face/master/ngx-scanner-face.png)
 
@@ -16,9 +16,9 @@ Add wanted package to NgModule imports:
 ```typescript
 import { NgxScannerFaceModule } from 'ngx-scanner-face';
 @NgModule({
-    imports: [
-        NgxScannerFaceModule
-    ]
+  imports: [
+    NgxScannerFaceModule
+  ]
 })
 ```
 
@@ -26,7 +26,9 @@ In the Component:
 
 ```html
 <ngx-scanner-face #scanner="scanner" [isAuto]="true"></ngx-scanner-face>
-<span>{{scanner.data | json}}</span>
+
+<span>{{scanner.data.value | json}}</span><!-- value -->
+<span>{{scanner.data | async | json}}</span><!-- async -->
 ```
 
 
@@ -50,6 +52,26 @@ angular.json
 }
 ```
 
+For select files
+
+```typescript
+constructor(private face: NgxScannerFaceService) {}
+
+public onSelects(files: any) {
+  this.face.loadFiles(files, this.scannerConfig).subscribe((res: ScannerFaceResult[]) => {
+    this.scannerResult = res;
+  });
+}
+```
+
+```html
+<input #file type="file" (change)="onSelects(file.files)" [multiple]="'multiple'" [accept]="'.jpg, .png'"/>
+
+<div *ngFor="let row of scannerResult">
+  <img [src]="row.url" [alt]="row.name"><!-- Need bypassSecurityTrustUrl -->
+</div>
+```
+
 ### API Documentation
 
 <details><summary><b>Input</b></summary>
@@ -58,12 +80,13 @@ angular.json
 | ---           | ---                         | ---                     | ---         |
 | [src]         | image url                   | string                  | -           |
 | [isAuto]      | auto camera                 | boolean                 | false       |
-| [fps]         | frames/sec                  | number                  | 30          |
+| [fps]         | frames/ms                   | number                  | 30          |
+| [timeoutDetect]| detect faces/ms            | number                  | 1000        |
 | [style]       | style for canvas            | Object                  | ``` {width:'100%',height:'100%',background:'#000000'} ```       |
 | [medias]      | setting video               | MediaStreamConstraints  | ``` {audio:false,video:{width:{ideal:1280},height:{ideal:720},facingMode:'environment'}} ``` |
-| [env]         | env config                  | <H.Env>                 | ``` { perfadd: false } ``` |
-| [draw]        | draw config                 | <H.DrawOptions>         | ``` { font: 'monospace', lineHeight: 20 }``` |
-| [human]       | user configuration for human, used to fine-tune behavior  | <H.Config>           | ``` {async:false,modelBasePath:'./models',filter:{flip:false,enabled:true,equalization:false,},face:{enabled:true,detector:{rotation:false},mesh:{enabled:true},attention:{enabled:false},iris:{enabled:true},description:{enabled:true},emotion:{enabled:true}},body:{enabled:true},hand:{enabled:true},object:{enabled:false},gesture:{enabled:true},} ``` |
+| [env]         | env config                  | <Env>                 | ``` { perfadd: false } ``` |
+| [draw]        | draw config                 | <DrawOptions>         | ``` { font: 'monospace', lineHeight: 20 }``` |
+| [human]       | user configuration for human, used to fine-tune behavior  | <Config>           | ``` {async:false,modelBasePath:'./models',filter:{flip:false,enabled:true,equalization:false,},face:{enabled:true,detector:{rotation:false},mesh:{enabled:true},attention:{enabled:false},iris:{enabled:true},description:{enabled:true},emotion:{enabled:true}},body:{enabled:true},hand:{enabled:true},object:{enabled:false},gesture:{enabled:true},} ``` |
 | [config]      | Config all                  | BaseConfig              | ``` {src:...,isAuto:...,isLoading:...,fps:...,env:...,draw:...,human:...,style:...,medias:...} ``` |
 
 </details>
@@ -72,19 +95,25 @@ angular.json
 
 | Field     | Description     | Type        | Default     |
 | ---       | ---             | ---         | ---         |
-| (event)   | Data            | <H.Result>  | -           |
+| (event)   | Data            | <Result>  | -           |
 | (error)   | Error           | any         | -           |
 
 </details>
 
-<details><summary><b>Component export</b></summary>
+<details><summary><b>Global variable in component</b></summary>
 
 | Field       | Description               | Type                      | Default     |
 | ---         | ---                       | ---                       | ---         |   
 | isStart     | start status              | boolean                   | false       |
 | isPause     | pause status              | boolean                   | false       |
 | isLoading   | loading status            | boolean                   | false       |
-| data        | data                      | BehaviorSubject<H.Result> | -           |
+| data        | data                      | BehaviorSubject<Result>   | -           |
+
+</details>
+
+<details><summary><b>Global event in component</b></summary>
+
+| Field       | Description               | Type                      | Default     |
 | ---         | ---                       | ---                       | ---         |   
 | (start)     | start camera              | AsyncSubject              | -           |
 | (stop)      | stop camera               | AsyncSubject              | -           |
@@ -95,9 +124,50 @@ angular.json
 
 </details>
 
+<details><summary><b>Global event in service</b></summary>
+
+| Field       | Description               | Type                            | Default     |
+| ---         | ---                       | ---                             | ---         |   
+| (toBase64)  | used for file selection   | AsyncSubject<ScannerFaceResult> | -           |
+| (loadFiles) | used for file selection   | AsyncSubject<ScannerFaceResult> | -           |
+
+</details>
+
 #### Models
   
-<details><summary><b>H.Env</b></summary>
+<details><summary><b>ScannerFaceConfig</b></summary>
+
+```typescript
+interface ScannerFaceConfig {
+  src?: string;
+  isAuto?: boolean;
+  isLoading?: boolean;
+  fps?: number;
+  timeoutDetect?: number;
+  env?: Partial<Env>;
+  draw?: Partial<DrawOptions>;
+  human?: Partial<Config>;
+  style?: HtmlStyles;
+  medias?: HtmlStyles;
+}
+```
+</details>
+
+<details><summary><b>ScannerFaceResult</b></summary>
+
+```typescript
+interface ScannerFaceResult {
+  file?: File;
+  name?: string;
+  url?: string;
+  blob?: any;
+  base64?: string;
+  result?: Result;
+}
+```
+</details>
+
+<details><summary><b>Env</b></summary>
 
 ```typescript
 class Env {
@@ -172,7 +242,7 @@ class Env {
 ```
 </details>
 
-<details><summary><b>H.Config</b></summary>
+<details><summary><b>Config</b></summary>
 
 ```typescript
 interface Config {
@@ -261,7 +331,7 @@ interface Config {
 
 </details>
 
-<details><summary><b>H.DrawOptions</b></summary>
+<details><summary><b>DrawOptions</b></summary>
 
 ```typescript
 interface DrawOptions {
@@ -308,7 +378,7 @@ interface DrawOptions {
 
 </details>
   
-<details><summary><b>H.Result</b></summary>
+<details><summary><b>Result</b></summary>
 
 ```typescript
 interface Result {
@@ -339,7 +409,7 @@ interface Result {
 
 #### Models in Config
 
-<details><summary><b>H.FilterConfig</b></summary>
+<details><summary><b>FilterConfig</b></summary>
 
 ```typescript
 interface FilterConfig {
@@ -395,7 +465,7 @@ interface FilterConfig {
 ```
 </details>
   
-<details><summary><b>H.GestureConfig</b></summary>
+<details><summary><b>GestureConfig</b></summary>
 
 ```typescript
 interface GestureConfig {
@@ -405,10 +475,10 @@ interface GestureConfig {
 ```
 </details>
   
-<details><summary><b>H.FaceConfig</b></summary>
+<details><summary><b>FaceConfig</b></summary>
 
 ```typescript
-interface FaceConfig extends GenericConfig {
+interface FaceConfig extends GestureConfig {
   detector: Partial<FaceDetectorConfig>;
   mesh: Partial<FaceMeshConfig>;
   attention: Partial<FaceAttentionConfig>;
@@ -422,7 +492,7 @@ interface FaceConfig extends GenericConfig {
 ```
 </details>
   
-<details><summary><b>H.BodyConfig</b></summary>
+<details><summary><b>BodyConfig</b></summary>
 
 ```typescript
 interface BodyConfig extends GenericConfig {
@@ -434,7 +504,7 @@ interface BodyConfig extends GenericConfig {
 ```
 </details>
   
-<details><summary><b>H.HandConfig</b></summary>
+<details><summary><b>HandConfig</b></summary>
 
 ```typescript
 interface HandConfig extends GenericConfig {
@@ -461,7 +531,7 @@ interface HandConfig extends GenericConfig {
 </details>
   
     
-<details><summary><b>H.ObjectConfig</b></summary>
+<details><summary><b>ObjectConfig</b></summary>
 
 ```typescript
 interface ObjectConfig extends GenericConfig {
@@ -475,7 +545,7 @@ interface ObjectConfig extends GenericConfig {
 ```
 </details>
     
-<details><summary><b>H.SegmentationConfig</b></summary>
+<details><summary><b>SegmentationConfig</b></summary>
 
 ```typescript
 interface SegmentationConfig extends GenericConfig {
@@ -487,7 +557,7 @@ interface SegmentationConfig extends GenericConfig {
 
 #### Models in Result
 
-<details><summary><b>H.FaceResult</b></summary>
+<details><summary><b>FaceResult</b></summary>
 
 ```typescript
 interface FaceResult {
@@ -554,7 +624,7 @@ interface FaceResult {
 ```
 </details>
 
-<details><summary><b>H.BodyResult</b></summary>
+<details><summary><b>BodyResult</b></summary>
 
 ```typescript
 interface BodyResult {
@@ -575,7 +645,7 @@ interface BodyResult {
 </details>
 
 
-<details><summary><b>H.HandResult</b></summary>
+<details><summary><b>HandResult</b></summary>
 
 ```typescript
 interface HandResult {
@@ -607,7 +677,7 @@ interface HandResult {
 </details>
 
 
-<details><summary><b>H.GestureResult</b></summary>
+<details><summary><b>GestureResult</b></summary>
 
 ```typescript
 type GestureResult = {
@@ -627,7 +697,7 @@ type GestureResult = {
 </details>
 
 
-<details><summary><b>H.ObjectResult</b></summary>
+<details><summary><b>ObjectResult</b></summary>
 
 ```typescript
 interface ObjectResult {
@@ -649,7 +719,7 @@ interface ObjectResult {
 </details>
 
 
-<details><summary><b>H.PersonResult</b></summary>
+<details><summary><b>PersonResult</b></summary>
 
 ```typescript
 interface PersonResult {
@@ -676,7 +746,7 @@ interface PersonResult {
 
 #### Models in FaceConfig
 
-<details><summary><b>H.FaceDetectorConfig</b></summary>
+<details><summary><b>FaceDetectorConfig</b></summary>
 
 ```typescript
 interface FaceDetectorConfig extends GenericConfig {
@@ -699,7 +769,7 @@ interface FaceDetectorConfig extends GenericConfig {
 ```
 </details>
 
-<details><summary><b>H.FaceMeshConfig</b></summary>
+<details><summary><b>FaceMeshConfig</b></summary>
 
 ```typescript
 interface FaceMeshConfig extends GenericConfig {
@@ -709,7 +779,7 @@ interface FaceMeshConfig extends GenericConfig {
 ```
 </details>
 
-<details><summary><b>H.FaceDescriptionConfig</b></summary>
+<details><summary><b>FaceDescriptionConfig</b></summary>
 
 ```typescript
 interface FaceDescriptionConfig extends GenericConfig {
@@ -719,7 +789,7 @@ interface FaceDescriptionConfig extends GenericConfig {
 ```
 </details>
 
-<details><summary><b>H.FaceEmotionConfig</b></summary>
+<details><summary><b>FaceEmotionConfig</b></summary>
 
 ```typescript
 interface FaceEmotionConfig extends GenericConfig {
@@ -729,7 +799,7 @@ interface FaceEmotionConfig extends GenericConfig {
 ```
 </details>
 
-<details><summary><b>H.FaceGearConfig</b></summary>
+<details><summary><b>FaceGearConfig</b></summary>
 
 ```typescript
 interface FaceGearConfig extends GenericConfig {
@@ -746,12 +816,8 @@ interface FaceGearConfig extends GenericConfig {
     <th colspan="2">Support versions</th>
   </tr>
   <tr>
-    <td>Angular 15</td>
-    <td>1.0.8</td>
-  </tr>
-  <tr>
-    <td>Angular 14</td>
-    <td>1.0.0</td>
+    <td>Angular 12</td>
+    <td>1.1.1</td>
   </tr>
 </table>
 
