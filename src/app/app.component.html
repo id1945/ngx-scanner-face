@@ -1,0 +1,88 @@
+<div class="container">
+  <h1> ngx-scanner-face </h1>
+
+  <!-- devices -->
+  <div class="col-xs-12 col-md-6 col-lg-4 col-xl-3 my-1">
+    <select #select (change)="action.playDevice(select.value)" class="form-select form-select-md">
+      <option [value]="null" selected>Select device</option>
+      <option *ngFor="let c of action.devices.value; let i = index" [value]="c.deviceId" [selected]="i == 0">{{c.label}}</option>
+    </select>
+  </div>
+  
+  <!-- ngx-scanner-face -->
+  <ngx-scanner-face #action="scanner" [config]="scannerConfig" (event)="onEvent($event)"></ngx-scanner-face>
+
+  <!-- data  -->
+  <!-- <p class="data">{{ action.data | async | json }}</p> -->
+
+  <!-- Loading -->
+  <p *ngIf="action.isLoading">⌛ Loading...</p>
+
+  <br>
+
+  <!-- start/stop -->
+  <button class="btn" [class.btn-info]="!action.isStart" [class.btn-warning]="action.isStart" [disabled]="action.isLoading">
+    <img *ngIf="!action.isStart" (click)="handle(action, 'start')" src="assets/images/camera-on.svg" width="30px"/>
+    <img *ngIf="action.isStart" (click)="handle(action, 'stop')" src="assets/images/camera-off.svg" width="30px"/>
+  </button>
+  
+  <!-- play/pause -->
+  <button class="btn" [class.btn-info]="!action.isStart" [class.btn-warning]="action.isStart" [disabled]="!action.isStart" (click)="handle(action, action.isPause ? 'play' : 'pause')">
+    <img [src]="action.isPause ? 'assets/images/play.svg ': 'assets/images/pause.svg'" width="30px"/>
+  </button>
+
+  <!-- isTorch -->
+  <button class="btn" [class.btn-info]="!action.isStart" [class.btn-warning]="action.isStart" [disabled]="!action.isStart" (click)="action.isTorch = !action.isTorch; handle(action, 'torcher')">
+    <img [src]="action.isTorch ? 'assets/images/flash-off.svg' : 'assets/images/flash-on.svg'" width="30px"/>
+  </button>
+
+  <!-- download -->
+  <button class="btn" [class.btn-info]="!action.isStart" [class.btn-warning]="action.isStart" [disabled]="!action.isStart" (click)="handle(action, 'download')">
+    <img src="assets/images/capture.svg" width="30px"/>
+  </button>
+  <br>
+
+  <button (click)="onGetConstraints()" class="btn btn-success">Get</button>
+  <button (click)="applyConstraints()" class="btn btn-success">App</button>
+  <br>
+  
+  <!-- For select files -->
+  <input #file type="file" (change)="onSelects(file.files)" [multiple]="'multiple'" [accept]="'.jpg, .png, .gif, .jpeg'" class="btn btn-success my-2"/>
+
+  <!-- Percentage & quality -->
+  <div class="row justify-content-center">
+    <div class="col-xs-12 col-md-6 col-lg-4 col-xl-2 my-1">
+      <select #select2 (change)="percentage = +select2.value" class="form-select form-select-md">
+        <option *ngFor="let item of [10,20,30,40,50,60,70,80,90,100]" [value]="item" [selected]="item == percentage">Percentage {{item}}%</option>
+      </select>
+    </div>
+
+    <div class="col-xs-12 col-md-6 col-lg-4 col-xl-2 my-1">
+      <select #select3 (change)="quality = +select3.value" class="form-select form-select-md">
+        <option *ngFor="let item of [10,20,30,40,50,60,70,80,90,100]" [value]="item" [selected]="item == quality">Quality {{item}}%</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngFor="let row of scannerResult">
+    <img [src]="row.url || '' | safe: 'url'" [alt]="row.name" [style.maxWidth.%]="100" class="my-1">
+    <!-- {{row | json}} -->
+  </div>
+  <br>
+
+  <!-- ngx-scanner-face -->
+  <!--   <ngx-scanner-face #actionSrc="scanner" [config]="scannerConfig" (event)="onEvent($event)" [src]="'https://www.dungplus.com/wp-content/uploads/2019/12/girl-xinh-7.jpg'" class="ngx-scanner-face-src"></ngx-scanner-face> -->
+
+  <!-- Loading -->
+  <!--   <p *ngIf="actionSrc.isLoading">⌛ Loading...</p> -->
+
+  <!-- <img [src]="this.base64" [style.maxWidth.%]="100"> -->
+
+  <div class="text-center p-3">
+    <!-- License -->
+    <p class="center"><a href="https://github.com/id1945/ngx-scanner-face/blob/master/LICENSE">MIT License</a></p>
+    <div>Author: DaiDH</div>
+    <!-- Copyright -->
+    <div>Copyright (C) 2021 - {{date | date: 'yyyy'}}</div>
+  </div>
+</div>
